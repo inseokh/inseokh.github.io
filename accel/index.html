@@ -63,9 +63,6 @@ function updateFieldIfNotNull(fieldName, value, precision=10){
 }
 
 function handleMotion(event) {
-  //updateFieldIfNotNull('Accelerometer_gx', event.accelerationIncludingGravity.x);
-  //updateFieldIfNotNull('Accelerometer_gy', event.accelerationIncludingGravity.y);
-  //updateFieldIfNotNull('Accelerometer_gz', event.accelerationIncludingGravity.z);
   var ax = event.acceleration.x;
   var ay = event.acceleration.y;
   var az = event.acceleration.z;
@@ -74,14 +71,10 @@ function handleMotion(event) {
   updateFieldIfNotNull('Accelerometer_y', ay);
   updateFieldIfNotNull('Accelerometer_z', az);
 
-  //updateFieldIfNotNull('Accelerometer_i', event.interval, 2);
-
-  //updateFieldIfNotNull('Gyroscope_z', event.rotationRate.alpha);
-  //updateFieldIfNotNull('Gyroscope_x', event.rotationRate.beta);
-  //updateFieldIfNotNull('Gyroscope_y', event.rotationRate.gamma);
-  //incrementEventCount();
-  total.add(ax, ay, az);
-  updateFieldIfNotNull('Accel_count', total.count, precision=0);
+  if (is_measuring == true){
+    total.add(ax, ay, az);
+    updateFieldIfNotNull('Accel_count', total.count, precision=0);
+  }
 }
 
 function totalAccel(){
@@ -105,12 +98,19 @@ function totalAccel(){
 }
 
 function start_accel(){
-    total.reset();
     window.addEventListener("devicemotion", handleMotion);
+}
+
+function stop_accel(){
+    window.removeEventListener("devicemotion", handleMotion);
+}
+
+function start_measure(){
+    total.reset();
     document.getElementById("start_demo").innerHTML = "Stop shaking";
     demo_button.classList.remove('btn-success');
     demo_button.classList.add('btn-danger');
-    is_running = true;
+    is_measuring = true;
     updateFieldIfNotNull("Accel_mean", total.mean(), precision=2);
     var ref = new Date().getTime() + timer_exp;
     timer = setInterval(function() {
@@ -123,12 +123,11 @@ function start_accel(){
     }, 1000);
 }
 
-function stop_accel(){
-    window.removeEventListener("devicemotion", handleMotion);
+function stop_measure(){
     demo_button.innerHTML = "Start and Shake!!";
     demo_button.classList.add('btn-success');
     demo_button.classList.remove('btn-danger');
-    is_running = false;
+    is_measuring = false;
     if (timer != null){
         clearInterval(timer);
     }
@@ -141,7 +140,7 @@ var timer = null;
 
 updateFieldIfNotNull('Time_remain', timer_exp/1000, precision=0);
 
-let is_running = false;
+let is_measuring = false;
 let demo_button = document.getElementById("start_demo");
 demo_button.onclick = function(e) {
   e.preventDefault();
@@ -154,10 +153,10 @@ demo_button.onclick = function(e) {
     DeviceMotionEvent.requestPermission();
   }
   
-  if (is_running){
-      stop_accel();
+  if (is_measuring){
+      stop_measure();
   }else{
-      start_accel();
+      start_measure();
   }
 };
 
