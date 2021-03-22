@@ -32,8 +32,9 @@
   <li>(Real-time) Y-axis: <span id="Accelerometer_y">0</span><span> m/s<sup>2</sup></span></li>
   <li>(Real-time) Z-axis: <span id="Accelerometer_z">0</span><span> m/s<sup>2</sup></span></li>
   <li>(Real-time) count : <span id="Accel_count">0</span><span> samples</span></li>
-  <li>Mean intensity: <span id="Accel_mean">0</span><span> ms</span></li>
+  <li>Mean intensity: <span id="Accel_mean">0</span><span> m/s<sup>2</sup></span></li>
 </ul>
+<h4>Time remaining: <span id="Time_remain">0</span> sec</h4>
 
 </div>
 </main>
@@ -76,7 +77,7 @@ function totalAccel(){
     this.total = 0;
     this.count = 0;
     this.add = function(ax, ay, az){
-        this.total += (ax**2 + ay**2 + az**2);
+        this.total += Math.sqrt(ax**2 + ay**2 + az**2);
         this.count++;
     }
     this.reset = function(){
@@ -92,7 +93,37 @@ function totalAccel(){
     }
 }
 
+function start_accel(){
+ total.reset()
+    window.addEventListener("devicemotion", handleMotion);
+    document.getElementById("start_demo").innerHTML = "Stop demo";
+    demo_button.classList.remove('btn-success');
+    demo_button.classList.add('btn-danger');
+    is_running = true;
+    updateFieldIfNotNull("Accel_mean", total.mean(), precision=2);
+    var ref = new Date().getTime();
+    var timer = setInterval(function() {
+        var now = new Date().getTime();
+        updateFieldIfNotNull('Time_remain', (now - ref), precision=0);
+        if ((now - ref) <= 0) {
+            clearInterval(timer);
+            stop_accel();
+        }
+    }
+}
+
+function stop_accel(){
+    window.removeEventListener("devicemotion", handleMotion);
+    demo_button.innerHTML = "Start demo";
+    demo_button.classList.add('btn-success');
+    demo_button.classList.remove('btn-danger');
+    is_running = false;
+    updateFieldIfNotNull("Accel_mean", total.mean(), precision=2);
+}
+
 let total = new totalAccel();
+let timer_exp = 5000; // 5 seconds
+updateFieldIfNotNull('Time_remain', timer_exp/1000, precision=0);
 
 let is_running = false;
 let demo_button = document.getElementById("start_demo");
@@ -108,20 +139,9 @@ demo_button.onclick = function(e) {
   }
   
   if (is_running){
-    window.removeEventListener("devicemotion", handleMotion);
-    demo_button.innerHTML = "Start demo";
-    demo_button.classList.add('btn-success');
-    demo_button.classList.remove('btn-danger');
-    is_running = false;
-    updateFieldIfNotNull("Accel_mean", total.mean());
+      stop_accel();
   }else{
-    total.reset()
-    window.addEventListener("devicemotion", handleMotion);
-    document.getElementById("start_demo").innerHTML = "Stop demo";
-    demo_button.classList.remove('btn-success');
-    demo_button.classList.add('btn-danger');
-    is_running = true;
-    updateFieldIfNotNull("Accel_mean", total.mean());
+      start_accel();
   }
 };
 
