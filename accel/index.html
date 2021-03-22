@@ -118,7 +118,7 @@ function start_measure(){
         updateFieldIfNotNull('Time_remain', Math.round((ref - now)/1000), precision=0);
         if ((ref - now) <= 0) {
             clearInterval(timer);
-            stop_accel();
+            stop_measure();
         }
     }, 1000);
 }
