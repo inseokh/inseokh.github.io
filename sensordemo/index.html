@@ -17,13 +17,13 @@
 <body>
 <main role="main" class="container">
 
-<h1 align="left">JavaScript Sensor Access Demo</h1>
+<h1 align="left">Web Accel Demo</h1>
 <p><b>This demo page should be run from a mobile phone or a tablet.</b></p>
 
 <div id="demo-div">
     <h3><a id="start_demo" class="btn btn-lg btn-success py-1" href="#" role="button">Start the demo</a></h3>
 
-<h4>Accelerometer</h4>
+<h4>Accelerometer (w/o gravity)</h4>
 <ul>
   <li>(Real-time) X-axis: <span id="Accelerometer_x">0</span><span> m/s<sup>2</sup></span></li>
   <li>(Real-time) Y-axis: <span id="Accelerometer_y">0</span><span> m/s<sup>2</sup></span></li>
@@ -31,7 +31,7 @@
   <li>(Real-time) count : <span id="Accel_count">0</span><span> samples</span></li>
 </ul>
 <h4>Time remaining: <span id="Time_remain">0</span><span> sec</span></h4>
-<h4>Mean intensity: <span id="Accel_mean">0</span><span> m/s<sup>2</sup></span></h4>
+<h4>Mean intensity: <span id="Accel_mean" color="blue">0</span><span> m/s<sup>2</sup></span></h4>
 </div>
 </main>
 <script>
