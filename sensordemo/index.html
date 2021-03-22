@@ -103,7 +103,7 @@ function start_accel(){
     var ref = new Date().getTime() + timer_exp;
     timer = setInterval(function() {
         var now = new Date().getTime();
-        updateFieldIfNotNull('Time_remain', (ref - now)*1000, precision=0);
+        updateFieldIfNotNull('Time_remain', (ref - now)/1000, precision=0);
         if ((ref - now) <= 0) {
             clearInterval(timer);
             stop_accel();
