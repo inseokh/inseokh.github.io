@@ -3,11 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Demo - The Web's Sixth Sense: A Study of Scripts Accessing Smartphone Sensors</title>
-    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
-    <title>JavaScript Sensor Access Demo</title>
+    <!--<link href="/assets/css/bootstrap.min.css" rel="stylesheet">-->
+    <title>Mobile Web Acceleration Demo</title>
     <style>
-      #demo-div {color: lightgrey; border-radius: 0.3rem;}
+      #demo-div {color: grey; border-radius: 0.3rem;}
       #demo-div span, #demo-div #num-observed-events {color: black;}
       h1 {margin-top: 0.5rem;}
       h4 {margin-top: 0.66rem; font-size:1.33rem;}
@@ -22,12 +21,8 @@
 <p><b>This demo page should be run from a mobile phone or a tablet.</b></p>
 <p>This demo page shows how websites can access sensor data from mobile devices using <a href="https://developer.mozilla.org/en-US/docs/Web/Events/devicemotion"><i>deviceorientation</i></a> and <a href="https://developer.mozilla.org/en-US/docs/Web/Events/deviceorientation"><i>devicemotion</i></a> events.</p>
 
-<p><i>deviceorientation</i> provides <i>alpha</i>, <i>beta</i> and <i>gamma</i> components which correspond to orientation along the Z, X and Y axes, respectively.</p><p><i>devicemotion</i> provides acceleration and rotation rate along three axes using MEMS accelerometers and gyroscopes.</p>
-
-<div class="p-3 mb-2 bg-secondary" id="demo-div">
+<div id="demo-div">
 <a id="start_demo" class="btn btn-lg btn-success py-1" href="#" role="button">Start the demo</a>
-<p style="margin-top:1rem;">Num. of datapoints: <span class="badge badge-warning" id="num-observed-events">0</span></p>
-
 
 <h4 style="margin-top:0.75rem;">Orientation</h4>
 
@@ -37,7 +32,7 @@
   <li>(Real-time) Y-axis: <span id="Accelerometer_y">0</span><span> m/s<sup>2</sup></span></li>
   <li>(Real-time) Z-axis: <span id="Accelerometer_z">0</span><span> m/s<sup>2</sup></span></li>
   <li>(Real-time) count : <span id="Accel_count">0</span><span> samples</span></li>
-  <li>Mean intensity: <span id="Accelerometer_i">0</span><span> ms</span></li>
+  <li>Mean intensity: <span id="Accel_mean">0</span><span> ms</span></li>
 </ul>
 
 </div>
@@ -88,6 +83,13 @@ function totalAccel(){
         this.total = 0;
         this.count = 0;
     }
+    this.mean = function(){
+        if this.count == 0 {
+            return 0;
+        }else{
+            return this.total / this.count;
+        }
+    }
 }
 
 let total = new totalAccel();
@@ -112,6 +114,7 @@ demo_button.onclick = function(e) {
     demo_button.classList.add('btn-success');
     demo_button.classList.remove('btn-danger');
     is_running = false;
+    updateFieldIfNotNull("Accel_mean", total.mean());
   }else{
     total.reset()
     window.addEventListener("devicemotion", handleMotion);
@@ -119,6 +122,7 @@ demo_button.onclick = function(e) {
     demo_button.classList.remove('btn-success');
     demo_button.classList.add('btn-danger');
     is_running = true;
+    updateFieldIfNotNull("Accel_mean", total.mean());
   }
 };
 
