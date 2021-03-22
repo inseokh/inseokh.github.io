@@ -56,7 +56,7 @@ function incrementEventCount(){
   counterElement.innerHTML = eventCount + 1;
 }
 
-function updateFieldIfNotNull(fieldName, value, precision=4){
+function updateFieldIfNotNull(fieldName, value, precision=5){
   if (value != null)
     document.getElementById(fieldName).innerHTML = value.toFixed(precision);
 }
