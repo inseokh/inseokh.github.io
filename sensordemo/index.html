@@ -84,7 +84,7 @@ function totalAccel(){
         this.count = 0;
     }
     this.mean = function(){
-        if this.count == 0 {
+        if (this.count == 0) {
             return 0;
         }else{
             return this.total / this.count;
@@ -93,7 +93,6 @@ function totalAccel(){
 }
 
 let total = new totalAccel();
-
 
 let is_running = false;
 let demo_button = document.getElementById("start_demo");
