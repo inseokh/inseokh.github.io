@@ -21,7 +21,7 @@
 <p><b>This demo page should be run from a mobile phone or a tablet.</b></p>
 
 <div id="demo-div">
-    <h3><a id="start_demo" class="btn btn-lg btn-success py-1" href="#" role="button">Start the demo</a></h3>
+    <h3><a id="start_demo" class="btn btn-lg btn-success py-1" href="#" role="button">Start and Shake!!</a></h3>
 
 <h4>Accelerometer (w/o gravity)</h4>
 <ul>
@@ -92,7 +92,7 @@ function totalAccel(){
 function start_accel(){
     total.reset();
     window.addEventListener("devicemotion", handleMotion);
-    document.getElementById("start_demo").innerHTML = "Stop demo";
+    document.getElementById("start_demo").innerHTML = "Stop shaking";
     demo_button.classList.remove('btn-success');
     demo_button.classList.add('btn-danger');
     is_running = true;
@@ -110,7 +110,7 @@ function start_accel(){
 
 function stop_accel(){
     window.removeEventListener("devicemotion", handleMotion);
-    demo_button.innerHTML = "Start demo";
+    demo_button.innerHTML = "Start and Shake!!";
     demo_button.classList.add('btn-success');
     demo_button.classList.remove('btn-danger');
     is_running = false;
@@ -121,7 +121,7 @@ function stop_accel(){
 }
 
 let total = new totalAccel();
-let timer_exp = 5000; // 5 seconds
+let timer_exp = 10000; // in milliseconds
 var timer = null;
 
 updateFieldIfNotNull('Time_remain', timer_exp/1000, precision=0);
