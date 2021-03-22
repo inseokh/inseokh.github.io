@@ -136,12 +136,10 @@ function stop_measure(){
 
 let total = new totalAccel();
 let timer_exp = 10000; // in milliseconds
-var timer = null;
-
-updateFieldIfNotNull('Time_remain', timer_exp/1000, precision=0);
-
 let is_measuring = false;
 let demo_button = document.getElementById("start_demo");
+var timer = null;
+
 demo_button.onclick = function(e) {
   e.preventDefault();
   
@@ -159,6 +157,9 @@ demo_button.onclick = function(e) {
       start_measure();
   }
 };
+
+updateFieldIfNotNull('Time_remain', timer_exp/1000, precision=0);
+start_accel();
 
 
 </script>
