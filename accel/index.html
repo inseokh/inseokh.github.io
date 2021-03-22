@@ -50,16 +50,6 @@
 </div>
 </main>
 <script>
-window.onload = function(){
-   // Request permission for iOS 13+ devices
-    if (
-        DeviceMotionEvent &&
-        typeof DeviceMotionEvent.requestPermission === "function"
-    ) {
-        DeviceMotionEvent.requestPermission();
-    }
-}
-
 function incrementEventCount(){
   let counterElement = document.getElementById("num-observed-events")
   let eventCount = parseInt(counterElement.innerHTML)
@@ -150,14 +140,20 @@ let demo_button = document.getElementById("start_demo");
 var timer = null;
 
 demo_button.onclick = function(e) {
-  e.preventDefault();
-  
+    e.preventDefault();
+    // Request permission for iOS 13+ devices
+    if (
+        DeviceMotionEvent &&
+        typeof DeviceMotionEvent.requestPermission === "function"
+    ) {
+        DeviceMotionEvent.requestPermission();
+    }
  
-  if (is_measuring){
-      stop_measure();
-  }else{
-      start_measure();
-  }
+    if (is_measuring){
+        stop_measure();
+    }else{
+        start_measure();
+    }
 };
 
 updateFieldIfNotNull('Time_remain', timer_exp/1000, precision=0);
