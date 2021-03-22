@@ -98,6 +98,13 @@ function totalAccel(){
 }
 
 function start_accel(){
+   // Request permission for iOS 13+ devices
+    if (
+        DeviceMotionEvent &&
+        typeof DeviceMotionEvent.requestPermission === "function"
+    ) {
+        DeviceMotionEvent.requestPermission();
+    }
     window.addEventListener("devicemotion", handleMotion);
 }
 
@@ -143,14 +150,7 @@ var timer = null;
 demo_button.onclick = function(e) {
   e.preventDefault();
   
-  // Request permission for iOS 13+ devices
-  if (
-    DeviceMotionEvent &&
-    typeof DeviceMotionEvent.requestPermission === "function"
-  ) {
-    DeviceMotionEvent.requestPermission();
-  }
-  
+ 
   if (is_measuring){
       stop_measure();
   }else{
