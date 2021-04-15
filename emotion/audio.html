@@ -214,31 +214,55 @@
             }
 
             
+
             recorder.onaudioprocess = function (e) {
-                var offlineCtx = new OfflineAudioContext(numberOfInputChannels,
-                                                        e.inputBuffer.duration * TARGET_SAMPLE_RATE,
-                                                        TARGET_SAMPLE_RATE);
+                        leftchannel.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+                        console.log(e.inputBuffer.getChannelData(0).length);
+                        // rightchannel.push(new Float32Array(e.inputBuffer.getChannelData(1)));
+                        recordingLength += bufferSize;
+                    };
 
-                // Play it from the beginning.
-                var offlineSource = offlineCtx.createBufferSource();
-                offlineSource.buffer = e.inputBuffer;
-                offlineSource.connect(offlineCtx.destination);
-                offlineSource.start();
-                offlineCtx.startRendering().then((resampled) => {
-                // `resampled` contains an AudioBuffer resampled at 16000Hz.
-                // use resampled.getChannelData(x) to get an Float32Array for channel x.
-                    leftchannel.push(new Float32Array(resampled.getChannelData(0)));
-                    // rightchannel.push(new Float32Array(resampled.getChannelData(1)));    // using mono channel
-                    // recordingLength += bufferSize;
-                    recordingLength += resampled.length;
-                    // console.log(''+e.inputBuffer.length);
-                    // console.log(''+resampled.length);
-                });
+            // recorder.onaudioprocess = function (e) {
+            //     var offlineCtx = new OfflineAudioContext(numberOfInputChannels,
+            //                                             e.inputBuffer.duration * TARGET_SAMPLE_RATE,
+            //                                             TARGET_SAMPLE_RATE);
+            //     // Play it from the beginning.
+            //     var offlineSource = offlineCtx.createBufferSource();
+            //     offlineSource.buffer = e.inputBuffer;
+            //     offlineSource.connect(offlineCtx.destination);
+            //     offlineSource.start();
+            //     offlineCtx.startRendering();
+            //     offlineCtx.oncomplete = function(resampled){
+            //     // `resampled` contains an AudioBuffer resampled at 16000Hz.
+            //     // use resampled.getChannelData(x) to get an Float32Array for channel x.
+            //         leftchannel.push(new Float32Array(resampled.renderedBuffer));
+            //         console.log(resampled);
+            //         console.log(resampled.renderedBuffer);
+            //         // leftchannel.push(new Float32Array(resampled.getChannelData(0)));
 
-                // leftchannel.push(new Float32Array(e.inputBuffer.getChannelData(0)));
-                // rightchannel.push(new Float32Array(e.inputBuffer.getChannelData(1)));
+            //         // rightchannel.push(new Float32Array(resampled.getChannelData(1)));    // using mono channel
+            //         // recordingLength += bufferSize;
+            //         recordingLength += resampled.renderedBuffer.length;
+            //         console.log(resampled.renderedBuffer.length);
+            //         // console.log(''+e.inputBuffer.length);
+            //         // console.log(''+resampled.length);
+            //     };
+
+            //     // offlineCtx.startRendering().then((resampled) => {
+            //     // // `resampled` contains an AudioBuffer resampled at 16000Hz.
+            //     // // use resampled.getChannelData(x) to get an Float32Array for channel x.
+            //     //     leftchannel.push(new Float32Array(resampled.getChannelData(0)));
+            //     //     // rightchannel.push(new Float32Array(resampled.getChannelData(1)));    // using mono channel
+            //     //     // recordingLength += bufferSize;
+            //     //     recordingLength += resampled.length;
+            //     //     // console.log(''+e.inputBuffer.length);
+            //     //     // console.log(''+resampled.length);
+            //     // });
+
+            //     // leftchannel.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+            //     // rightchannel.push(new Float32Array(e.inputBuffer.getChannelData(1)));
                 
-            }
+            // }
 
             // we connect the recorder
             mediaStream.connect(recorder);
@@ -257,7 +281,8 @@
             // we interleave both channels together
             // [left[0],right[0],left[1],right[1],...]
             // var interleaved = interleave(leftBuffer, rightBuffer);   // using only mono channel
-            interleaved = leftBuffer;
+            // interleaved = leftBuffer;
+            interleaved = downSample(leftBuffer);
 
             // we create our wav file
             var buffer = new ArrayBuffer(44 + interleaved.length * 2);
@@ -368,6 +393,15 @@
             return result;
         }
 
+        function downSample(channel){   // for 44100 to 11025
+            var length = channel.length;
+            var result = new Float32Array(Math.trunc(length / 4));
+
+            for (var index = 0; index < result.length;){
+                result[index++] = channel[index*4];
+            }
+            return result;
+        }
         function writeUTFBytes(view, offset, string) {
             for (var i = 0; i < string.length; i++) {
                 view.setUint8(offset + i, string.charCodeAt(i));
