@@ -24,7 +24,7 @@
     <p>Voice sensing time remaining: <span id="time_remain"></span></p>
     <div id="result" style="display:none;">
         <ul>
-            <li>Error: <span id="result_error">N/A</span></li>
+            <li id="li_error" style="display: none;">Error: <span id="result_error">N/A</span></li>
             <li>Calm: <span id="result_calm">N/A</span></li>
             <li>Anger: <span id="result_anger">N/A</span></li>
             <li>Joy: <span id="result_joy" style='color: red; font-weight: bold'>N/A</span></li>
@@ -283,6 +283,7 @@
                         
                         $('#result').show();
                         if ('error' in data && 'msg' in data){
+                            $('#li_error').show();
                             $('#result_error').html(data.msg + '(code: '+data.error+')');
                         }
                         if ('calm' in data){
