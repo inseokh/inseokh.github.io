@@ -3,17 +3,20 @@
 <html>
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title></title>
 </head>
 <body>
     <h1>Joyful Life with CSED490D</h1>
 
+    <button id="feelButton">How do I feel?</button>
     <button id="startRecordingButton">Start recording</button>
     <button id="stopRecordingButton">Stop recording</button>
     <button id="playButton">Play</button>
     <button id="downloadButton">Download</button>
     <button id="emotionButton">Emotion</button>
-    <p id="result">
+    <p>Voice sensing time remaining: <span id="time_remain"></span></p>
+    <div id="result" style="display:none;">
         <ul>
             <li>Error: <span id="result_error">N/A</span></li>
             <li>Calm: <span id="result_calm">N/A</span></li>
@@ -22,10 +25,12 @@
             <li>Sorrow: <span id="result_sorrow">N/A</span></li>
             <li>Energy: <span id="result_energy">N/A</span></li>
         </ul>
-    </p>
+    </div>
     
     <script src="jquery-3.6.0.js"></script> 
     <script>
+        var feelButton = document.getElementById("feelButton");
+        
         var startRecordingButton = document.getElementById("startRecordingButton");
         var stopRecordingButton = document.getElementById("stopRecordingButton");
         var playButton = document.getElementById("playButton");
@@ -46,8 +51,70 @@
         var context = null;
         var blob = null;
         var apiReturnData = null;
+        var timer_exp = 5000.0;   // 4.5 sec
+        var precision = 2;
+        $('#time_remain').text((timer_exp/1000).toFixed(precision));
 
-        startRecordingButton.addEventListener("click", function () {
+        feelButton.addEventListener("click", function(){
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            navigator.getUserMedia(
+                {
+                    audio: true
+                },
+                function (e) {
+                    startRecording(e);
+                    var ref = new Date().getTime() + timer_exp;
+                    timer = setInterval(function() {
+                        var now = new Date().getTime();
+                        $('#time_remain').text((Math.round(ref-now)/1000).toFixed(precision));
+
+                        if ((ref - now) <= 200) {   // max recording time enforced by API is 5000 msec. Just to prevent slight overflow, less than 200 ms is discarded. 
+                            $('#time_remain').text((0).toFixed(precision));
+                            clearInterval(timer);
+                            stopRecording();
+                            getEmotion();
+                        }
+                    }, 100);
+                }, 
+                function (e) {
+                    console.error(e);
+                }
+            );
+        })
+
+        startRecordingButton.addEventListener("click", startRecordingWithPermission);
+
+        stopRecordingButton.addEventListener("click", stopRecording);
+
+        emotionButton.addEventListener("click", getEmotion);
+
+        playButton.addEventListener("click", function () {
+            if (blob == null) {
+                return;
+            }
+
+            var url = window.URL.createObjectURL(blob);
+            var audio = new Audio(url);
+            audio.play();
+        });
+
+        downloadButton.addEventListener("click", function () {
+            if (blob == null) {
+                return;
+            }
+
+            var url = URL.createObjectURL(blob);
+
+            var a = document.createElement("a");
+            document.body.appendChild(a);
+            a.style = "display: none";
+            a.href = url;
+            a.download = "sample.wav";
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+
+        function startRecordingWithPermission() {
             // Initialize recorder
             
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
@@ -55,70 +122,71 @@
             {
                 audio: true
             },
+            startRecording,
             function (e) {
-                console.log("user consent");
+                    console.error(e);
+                });
+        }
 
-                // reset audio buffers
-                leftchannel = [];
-                rightchannel = [];
-                recordingLength = 0;
+        function startRecording(e) {
+            console.log("user consent");
 
-                // creates the audio context
-                window.AudioContext = window.AudioContext || window.webkitAudioContext;
-                context = new AudioContext();
+            // reset audio buffers
+            leftchannel = [];
+            rightchannel = [];
+            recordingLength = 0;
 
-                // creates an audio node from the microphone incoming stream
-                mediaStream = context.createMediaStreamSource(e);
+            // creates the audio context
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            context = new AudioContext();
 
-                // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/createScriptProcessor
-                // bufferSize: the onaudioprocess event is called when the buffer is full
-                var bufferSize = 2048;
-                var numberOfInputChannels = 1;
-                var numberOfOutputChannels = 1;
-                if (context.createScriptProcessor) {
-                    recorder = context.createScriptProcessor(bufferSize, numberOfInputChannels, numberOfOutputChannels);
-                } else {
-                    recorder = context.createJavaScriptNode(bufferSize, numberOfInputChannels, numberOfOutputChannels);
-                }
+            // creates an audio node from the microphone incoming stream
+            mediaStream = context.createMediaStreamSource(e);
 
+            // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/createScriptProcessor
+            // bufferSize: the onaudioprocess event is called when the buffer is full
+            var bufferSize = 2048;
+            var numberOfInputChannels = 1;
+            var numberOfOutputChannels = 1;
+            if (context.createScriptProcessor) {
+                recorder = context.createScriptProcessor(bufferSize, numberOfInputChannels, numberOfOutputChannels);
+            } else {
+                recorder = context.createJavaScriptNode(bufferSize, numberOfInputChannels, numberOfOutputChannels);
+            }
+
+            
+            recorder.onaudioprocess = function (e) {
+                var offlineCtx = new OfflineAudioContext(numberOfInputChannels,
+                                                        e.inputBuffer.duration * TARGET_SAMPLE_RATE,
+                                                        TARGET_SAMPLE_RATE);
+
+                // Play it from the beginning.
+                var offlineSource = offlineCtx.createBufferSource();
+                offlineSource.buffer = e.inputBuffer;
+                offlineSource.connect(offlineCtx.destination);
+                offlineSource.start();
+                offlineCtx.startRendering().then((resampled) => {
+                // `resampled` contains an AudioBuffer resampled at 16000Hz.
+                // use resampled.getChannelData(x) to get an Float32Array for channel x.
+                    leftchannel.push(new Float32Array(resampled.getChannelData(0)));
+                    // rightchannel.push(new Float32Array(resampled.getChannelData(1)));    // using mono channel
+                    // recordingLength += bufferSize;
+                    recordingLength += resampled.length;
+                    // console.log(''+e.inputBuffer.length);
+                    // console.log(''+resampled.length);
+                });
+
+                // leftchannel.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+                // rightchannel.push(new Float32Array(e.inputBuffer.getChannelData(1)));
                 
-                recorder.onaudioprocess = function (e) {
-                    var offlineCtx = new OfflineAudioContext(numberOfInputChannels,
-                                                            e.inputBuffer.duration * TARGET_SAMPLE_RATE,
-                                                            TARGET_SAMPLE_RATE);
+            }
 
-                    // Play it from the beginning.
-                    var offlineSource = offlineCtx.createBufferSource();
-                    offlineSource.buffer = e.inputBuffer;
-                    offlineSource.connect(offlineCtx.destination);
-                    offlineSource.start();
-                    offlineCtx.startRendering().then((resampled) => {
-                    // `resampled` contains an AudioBuffer resampled at 16000Hz.
-                    // use resampled.getChannelData(x) to get an Float32Array for channel x.
-                        leftchannel.push(new Float32Array(resampled.getChannelData(0)));
-                        // rightchannel.push(new Float32Array(resampled.getChannelData(1)));    // using mono channel
-                        // recordingLength += bufferSize;
-                        recordingLength += resampled.length;
-                        // console.log(''+e.inputBuffer.length);
-                        // console.log(''+resampled.length);
-                    });
+            // we connect the recorder
+            mediaStream.connect(recorder);
+            recorder.connect(context.destination);
+        }
 
-                    // leftchannel.push(new Float32Array(e.inputBuffer.getChannelData(0)));
-                    // rightchannel.push(new Float32Array(e.inputBuffer.getChannelData(1)));
-                    
-                }
-
-                // we connect the recorder
-                mediaStream.connect(recorder);
-                recorder.connect(context.destination);
-            },
-                        function (e) {
-                            console.error(e);
-                        });
-        });
-
-        stopRecordingButton.addEventListener("click", function () {
-
+        function stopRecording() {
             // stop recording
             recorder.disconnect(context.destination);
             mediaStream.disconnect(recorder);
@@ -165,35 +233,9 @@
 
             // our final blob
             blob = new Blob([view], { type: 'audio/wav' });
-        });
+        }
 
-        playButton.addEventListener("click", function () {
-            if (blob == null) {
-                return;
-            }
-
-            var url = window.URL.createObjectURL(blob);
-            var audio = new Audio(url);
-            audio.play();
-        });
-
-        downloadButton.addEventListener("click", function () {
-            if (blob == null) {
-                return;
-            }
-
-            var url = URL.createObjectURL(blob);
-
-            var a = document.createElement("a");
-            document.body.appendChild(a);
-            a.style = "display: none";
-            a.href = url;
-            a.download = "sample.wav";
-            a.click();
-            window.URL.revokeObjectURL(url);
-        });
-
-        emotionButton.addEventListener("click", function() {
+        function getEmotion(){
             if (blob == null){
                 console.warn("Blob is none");
             }
@@ -211,6 +253,7 @@
                         apiReturnData = data;
                         console.log(JSON.stringify(data));
                         
+                        $('#result').show();
                         if ('error' in data && 'msg' in data){
                             $('#result_error').html(data.msg + '(code: '+data.error+')');
                         }
@@ -238,7 +281,8 @@
             //             console.log('Emotion returned: '+data);
             //         }
             // );
-        })
+        }
+
         function flattenArray(channelBuffer, recordingLength) {
             var result = new Float32Array(recordingLength);
             var offset = 0;
