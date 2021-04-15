@@ -76,6 +76,8 @@
                         leftchannel.push(new Float32Array(resampled.getChannelData(0)));
                         rightchannel.push(new Float32Array(resampled.getChannelData(1)));
                         recordingLength += bufferSize;
+                        console.log(''+e.inputBuffer.length);
+                        console.log(''+resampled.length);
                     });
 
                     // leftchannel.push(new Float32Array(e.inputBuffer.getChannelData(0)));
