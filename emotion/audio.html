@@ -165,16 +165,22 @@
 
         function startRecordingWithPermission() {
             // Initialize recorder
-            
-            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-            navigator.getUserMedia(
-            {
-                audio: true
-            },
-            startRecording,
-            function (e) {
-                    console.error(e);
-                });
+            var constraints = {audio: true};
+            navigator.mediaDevices.getUserMedia(constraints)
+            .then(startRecording)
+            .catch(function(err) {
+                console.log('Media permission failed.');
+            });
+
+            // navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            // navigator.getUserMedia(
+            // {
+            //     audio: true
+            // },
+            // startRecording,
+            // function (e) {
+            //         console.error(e);
+            //     });
         }
 
         function startRecording(e) {
