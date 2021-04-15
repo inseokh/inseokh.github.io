@@ -75,9 +75,10 @@
                     // use resampled.getChannelData(x) to get an Float32Array for channel x.
                         leftchannel.push(new Float32Array(resampled.getChannelData(0)));
                         rightchannel.push(new Float32Array(resampled.getChannelData(1)));
-                        recordingLength += bufferSize;
-                        console.log(''+e.inputBuffer.length);
-                        console.log(''+resampled.length);
+                        // recordingLength += bufferSize;
+                        recordingLength += resampled.length;
+                        // console.log(''+e.inputBuffer.length);
+                        // console.log(''+resampled.length);
                     });
 
                     // leftchannel.push(new Float32Array(e.inputBuffer.getChannelData(0)));
