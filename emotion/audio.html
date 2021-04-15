@@ -12,13 +12,14 @@
     <button id="stopRecordingButton">Stop recording</button>
     <button id="playButton">Play</button>
     <button id="downloadButton">Download</button>
+    <button id="emotionButton">Emotion</button>
 
     <script>
         var startRecordingButton = document.getElementById("startRecordingButton");
         var stopRecordingButton = document.getElementById("stopRecordingButton");
         var playButton = document.getElementById("playButton");
         var downloadButton = document.getElementById("downloadButton");
-
+        var emotionButton = document.getElementById("emotionButton");
 
         var leftchannel = [];
         var rightchannel = [];
@@ -170,6 +171,18 @@
             window.URL.revokeObjectURL(url);
         });
 
+        emotionButton.addEventListener("click", function() {
+            if (blob == null){
+                console.warn("Blob is none");
+            }
+            var emotionQuery = $.post('https://api.webempath.net/v2/analyzeWav', 
+                    {apikey : 'COzs9xoZWiR-0mO5akDfZHfv86E_PHXZmeFCTewHkZs', 
+                     wav    : blob}, 
+                    function(data){
+                        console.debug('Emotion returned: '+data);
+                    }
+            );
+        })
         function flattenArray(channelBuffer, recordingLength) {
             var result = new Float32Array(recordingLength);
             var offset = 0;
