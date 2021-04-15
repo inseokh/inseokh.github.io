@@ -84,30 +84,51 @@
         });
 
         feelButton.addEventListener("click", function(){
-            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-            navigator.getUserMedia(
-                {
-                    audio: true
-                },
-                function (e) {
-                    startRecording(e);
-                    var ref = new Date().getTime() + timer_exp;
-                    timer = setInterval(function() {
-                        var now = new Date().getTime();
-                        $('#time_remain').text((Math.round(ref-now)/1000).toFixed(precision));
+            var constraints = {audio: true};
+            navigator.mediaDevices.getUserMedia(constraints)
+            .then(function(e) {
+                startRecording(e);
+                var ref = new Date().getTime() + timer_exp;
+                timer = setInterval(function() {
+                    var now = new Date().getTime();
+                    $('#time_remain').text((Math.round(ref-now)/1000).toFixed(precision));
 
-                        if ((ref - now) <= 200) {   // max recording time enforced by API is 5000 msec. Just to prevent slight overflow, less than 200 ms is discarded. 
-                            $('#time_remain').text((0).toFixed(precision));
-                            clearInterval(timer);
-                            stopRecording();
-                            getEmotion();
-                        }
-                    }, 100);
-                }, 
-                function (e) {
-                    console.error(e);
-                }
-            );
+                    if ((ref - now) <= 200) {   // max recording time enforced by API is 5000 msec. Just to prevent slight overflow, less than 200 ms is discarded. 
+                        $('#time_remain').text((0).toFixed(precision));
+                        clearInterval(timer);
+                        stopRecording();
+                        getEmotion();
+                    }
+                }, 100);
+            })
+            .catch(function(err) {
+                console.log('Media permission failed.');
+            });
+
+            // navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            // navigator.getUserMedia(
+            //     {
+            //         audio: true
+            //     },
+            //     function (e) {
+            //         startRecording(e);
+            //         var ref = new Date().getTime() + timer_exp;
+            //         timer = setInterval(function() {
+            //             var now = new Date().getTime();
+            //             $('#time_remain').text((Math.round(ref-now)/1000).toFixed(precision));
+
+            //             if ((ref - now) <= 200) {   // max recording time enforced by API is 5000 msec. Just to prevent slight overflow, less than 200 ms is discarded. 
+            //                 $('#time_remain').text((0).toFixed(precision));
+            //                 clearInterval(timer);
+            //                 stopRecording();
+            //                 getEmotion();
+            //             }
+            //         }, 100);
+            //     }, 
+            //     function (e) {
+            //         console.error(e);
+            //     }
+            // );
         })
 
         startRecordingButton.addEventListener("click", startRecordingWithPermission);
