@@ -26,7 +26,8 @@
         var recordingLength = 0;
         var volume = null;
         var mediaStream = null;
-        var sampleRate = 11025; //44100;
+        var sampleRate = 44100;
+        var TARGET_SAMPLE_RATE = 11025;
         var context = null;
         var blob = null;
 
@@ -60,8 +61,6 @@
 
                 
                 recorder.onaudioprocess = function (e) {
-                    var TARGET_SAMPLE_RATE = 11025;
-
                     var offlineCtx = new OfflineAudioContext(numberOfInputChannels,
                                                             e.inputBuffer.duration * TARGET_SAMPLE_RATE,
                                                             TARGET_SAMPLE_RATE);
@@ -120,8 +119,10 @@
             view.setUint32(16, 16, true); // chunkSize
             view.setUint16(20, 1, true); // wFormatTag
             view.setUint16(22, 2, true); // wChannels: stereo (2 channels)
-            view.setUint32(24, sampleRate, true); // dwSamplesPerSec
-            view.setUint32(28, sampleRate * 4, true); // dwAvgBytesPerSec
+            view.setUint32(24, TARGET_SAMPLE_RATE, true); // dwSamplesPerSec
+            // view.setUint32(24, sampleRate, true); // dwSamplesPerSec
+            view.setUint32(28, TARGET_SAMPLE_RATE * 4, true); // dwAvgBytesPerSec
+            // view.setUint32(28, sampleRate * 4, true); // dwAvgBytesPerSec
             view.setUint16(32, 4, true); // wBlockAlign
             view.setUint16(34, 16, true); // wBitsPerSample
             // data sub-chunk
