@@ -6,13 +6,23 @@
     <title></title>
 </head>
 <body>
-    <h1>Audio</h1>
+    <h1>Joyful Life with CSED490D</h1>
 
     <button id="startRecordingButton">Start recording</button>
     <button id="stopRecordingButton">Stop recording</button>
     <button id="playButton">Play</button>
     <button id="downloadButton">Download</button>
     <button id="emotionButton">Emotion</button>
+    <p id="result">
+        <ul>
+            <li>Error: <span id="result_error">N/A</span></li>
+            <li>Calm: <span id="result_calm">N/A</span></li>
+            <li>Anger: <span id="result_anger">N/A</span></li>
+            <li>Joy: <span id="result_joy" style='color: red; font-weight: bold'>N/A</span></li>
+            <li>Sorrow: <span id="result_sorrow">N/A</span></li>
+            <li>Energy: <span id="result_energy">N/A</span></li>
+        </ul>
+    </p>
     
     <script src="jquery-3.6.0.js"></script> 
     <script>
@@ -39,6 +49,7 @@
 
         startRecordingButton.addEventListener("click", function () {
             // Initialize recorder
+            
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
             navigator.getUserMedia(
             {
@@ -46,6 +57,11 @@
             },
             function (e) {
                 console.log("user consent");
+
+                // reset audio buffers
+                leftchannel = [];
+                rightchannel = [];
+                recordingLength = 0;
 
                 // creates the audio context
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -193,7 +209,26 @@
                     contentType: false,
                     success: function(data) {
                         apiReturnData = data;
-                        console.log('Emotion returned: '+data);
+                        console.log(JSON.stringify(data));
+                        
+                        if ('error' in data && 'msg' in data){
+                            $('#result_error').html(data.msg + '(code: '+data.error+')');
+                        }
+                        if ('calm' in data){
+                            $('#result_calm').html(data.calm);
+                        }
+                        if ('anger' in data){
+                            $('#result_anger').html(data.anger);
+                        }
+                        if ('joy' in data){
+                            $('#result_joy').html(data.joy);
+                        }
+                        if ('sorrow' in data){
+                            $('#result_sorrow').html(data.sorrow);
+                        }
+                        if ('energy' in data){
+                            $('#result_energy').html(data.energy);
+                        }
                     }
             });
             // var emotionQuery = $.post(apiEndPointV2, 
