@@ -70,7 +70,7 @@
         var context = null;
         var blob = null;
         var apiReturnData = null;
-        var timer_exp = 5000.0;   // 4.5 sec
+        var timer_exp = 4000.0;   // 4.0 sec
         var precision = 2;
         $('#time_remain').text((timer_exp/1000).toFixed(precision));
 
@@ -94,7 +94,7 @@
                     var now = new Date().getTime();
                     $('#time_remain').text((Math.round(ref-now)/1000).toFixed(precision));
 
-                    if ((ref - now) <= 200) {   // max recording time enforced by API is 5000 msec. Just to prevent slight overflow, less than 200 ms is discarded. 
+                    if ((ref - now) <= 100) {   // max recording time enforced by API is 5000 msec. Just to prevent slight overflow, less than 100 ms is discarded. 
                         $('#time_remain').text((0).toFixed(precision));
                         clearInterval(timer);
                         stopRecording();
